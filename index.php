@@ -71,6 +71,7 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 			color: white;
 			font-family: 'VT323', monospace;
 			font-size: 18px;
+			user-select: none;
 		}
 
 		a, a:hover, a:visited {
@@ -131,17 +132,18 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 <script type="text/javascript">
+// Bind keyboard keys
 document.onkeydown = (e) => {
 	switch(e.which) {
 	    case 38: // up
-	    	moveBackward($('.selected.item'));
+	    	moveBackward($('.selected.item:first'));
 		    break;
 	    case 40: // down
-	    	moveForward($('.selected.item'));
+	    	moveForward($('.selected.item:first'));
 		    break;
 		case 13: // enter
 			try {
-				$('.selected.item a:first')[0].click();
+				$('.selected.item:first a:first')[0].click();
 			} catch(e) {}
 		    break;	    
 	    default: 
