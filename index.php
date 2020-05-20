@@ -8,6 +8,7 @@
 
 // Define couple of labels to store the version of this scritp and the base url.
 define('VERSION', '1.0.0');
+define('COUNTDOWN', 10);
 define('BASE_URL', 'http' . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 's' : '') . "://{$_SERVER['HTTP_HOST']}" . dirname($_SERVER['PHP_SELF']));
 
 /**
@@ -119,6 +120,9 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 				<h1>Please press &#8679; and &#8681; to select which entry is highlighted.<br>
 				Press enter to boot the selected WEBSITE.</h1>
 			</div>
+			<div class="col-md-12">
+				<h1 id="countdown">The highlighted entry will be executed automatically in <span id="counter"><?=COUNTDOWN?></span>s</h1>
+			</div>
 		</div>
 	</div>
 </body>
@@ -145,21 +149,43 @@ document.onkeydown = (e) => {
 	e.preventDefault();
 };
 
-function setSelected(thisSelector) {
-	$('.selected.item').removeClass('selected');
-	$(thisSelector).addClass('selected');
+// declare globals and start, stop the countdown
+var intCounter        = <?=COUNTDOWN?>;
+var intervalCountdown = setInterval(countdown, 1000);
+function countdown(action) {
+	if (intervalCountdown == null) {
+		return;
+	} else if (action == "stop") {
+		clearInterval(intervalCountdown);
+		$('#countdown:first').remove();
+		intervalCountdown = null;
+	} else if (--intCounter == 0) {
+		$(document).trigger(
+			$.Event("keydown", {which: 13})
+		);
+	}
+	$('#counter:first').text(intCounter);
 }
 
+// move the item selection to the previous sibling
 function moveBackward(thisSelector) {
 	if ($(thisSelector).prev().length != 0) {
-		$(thisSelector).removeClass('selected').prev().addClass('selected');
-	}	
+		setSelected($(thisSelector).prev());
+	}
 }
 
+// move the item selection to the next sibling
 function moveForward(thisSelector) {
 	if ($(thisSelector).next().length != 0) {
-		$(thisSelector).removeClass('selected').next().addClass('selected');
+		setSelected($(thisSelector).next());
 	}
+}
+
+// select an item
+function setSelected(thisSelector) {
+	countdown("stop");
+	$('.selected.item').removeClass('selected');
+	$(thisSelector).addClass('selected');
 }
 </script>
 </html>
