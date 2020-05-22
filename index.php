@@ -132,6 +132,11 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 <script type="text/javascript">
+// Set the last selected item, if exists
+setSelected(
+	readLastSelectedItem()
+);
+
 // Bind keyboard keys
 document.onkeydown = (e) => {
 	switch(e.which) {
@@ -183,12 +188,29 @@ function moveForward(thisSelector) {
 	}
 }
 
+// Read the jq object of the last selected item from the local Storage. 0-Length jqobj otherwise.
+function readLastSelectedItem() {
+	return $('[href="' + localStorage.getItem('href_last_selected_item') + '"]:first').closest('.item');
+}
+
 // select an item
 function setSelected(thisSelector) {
-	countdown("stop");
+	if (typeof thisSelector === 'undefined' || thisSelector.length === 0) {
+		return;
+	}
+	countdown('stop');
+	storeLastSelectedItem(thisSelector);
 	$('.selected.item').removeClass('selected');
 	$(thisSelector).addClass('selected');
 }
+
+// Store the last selected item in the localStorage
+function storeLastSelectedItem(thisSelector) {
+	localStorage.setItem('href_last_selected_item',
+		$(thisSelector).find('a:first').attr('href')
+	);
+}
+
 </script>
 </html>
 
