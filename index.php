@@ -7,7 +7,8 @@
 */
 
 // Define couple of labels to store the version of this scritp and the base url.
-define('VERSION', '1.0.0');
+define('VERSION', '1.1.0');
+define('COUNTDOWN', 10);
 define('BASE_URL', 'http' . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 's' : '') . "://{$_SERVER['HTTP_HOST']}" . dirname($_SERVER['PHP_SELF']));
 
 /**
@@ -70,6 +71,7 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 			color: white;
 			font-family: 'VT323', monospace;
 			font-size: 18px;
+			user-select: none;
 		}
 
 		a, a:hover, a:visited {
@@ -119,6 +121,9 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 				<h1>Please press &#8679; and &#8681; to select which entry is highlighted.<br>
 				Press enter to boot the selected WEBSITE.</h1>
 			</div>
+			<div class="col-md-12">
+				<h1 id="countdown">The highlighted entry will be executed automatically in <span id="counter"><?=COUNTDOWN?></span>s</h1>
+			</div>
 		</div>
 	</div>
 </body>
@@ -127,17 +132,23 @@ $arrFilenames = array_values(array_filter(scandir($directory = '.'), function($s
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 <script type="text/javascript">
+// Set the last selected item, if exists
+setSelected(
+	readLastSelectedItem()
+);
+
+// Bind keyboard keys
 document.onkeydown = (e) => {
 	switch(e.which) {
 	    case 38: // up
-	    	moveBackward($('.selected.item'));
+	    	moveBackward($('.selected.item:first'));
 		    break;
 	    case 40: // down
-	    	moveForward($('.selected.item'));
+	    	moveForward($('.selected.item:first'));
 		    break;
 		case 13: // enter
 			try {
-				$('.selected.item a:first')[0].click();
+				$('.selected.item:first a:first')[0].click();
 			} catch(e) {}
 		    break;	    
 	    default: 
@@ -145,22 +156,61 @@ document.onkeydown = (e) => {
 	e.preventDefault();
 };
 
+// declare globals and start, stop the countdown
+var intCounter        = <?=COUNTDOWN?>;
+var intervalCountdown = setInterval(countdown, 1000);
+function countdown(action) {
+	if (intervalCountdown == null) {
+		return;
+	} else if (action == "stop") {
+		clearInterval(intervalCountdown);
+		$('#countdown:first').remove();
+		intervalCountdown = null;
+	} else if (--intCounter == 0) {
+		$(document).trigger(
+			$.Event("keydown", {which: 13})
+		);
+	}
+	$('#counter:first').text(intCounter);
+}
+
+// move the item selection to the previous sibling
+function moveBackward(thisSelector) {
+	if ($(thisSelector).prev().length != 0) {
+		setSelected($(thisSelector).prev());
+	}
+}
+
+// move the item selection to the next sibling
+function moveForward(thisSelector) {
+	if ($(thisSelector).next().length != 0) {
+		setSelected($(thisSelector).next());
+	}
+}
+
+// Read the jq object of the last selected item from the local Storage. 0-Length jqobj otherwise.
+function readLastSelectedItem() {
+	return $('[href="' + localStorage.getItem('href_last_selected_item') + '"]:first').closest('.item');
+}
+
+// select an item
 function setSelected(thisSelector) {
+	if (typeof thisSelector === 'undefined' || thisSelector.length === 0) {
+		return;
+	}
+	countdown('stop');
+	storeLastSelectedItem(thisSelector);
 	$('.selected.item').removeClass('selected');
 	$(thisSelector).addClass('selected');
 }
 
-function moveBackward(thisSelector) {
-	if ($(thisSelector).prev().length != 0) {
-		$(thisSelector).removeClass('selected').prev().addClass('selected');
-	}	
+// Store the last selected item in the localStorage
+function storeLastSelectedItem(thisSelector) {
+	localStorage.setItem('href_last_selected_item',
+		$(thisSelector).find('a:first').attr('href')
+	);
 }
 
-function moveForward(thisSelector) {
-	if ($(thisSelector).next().length != 0) {
-		$(thisSelector).removeClass('selected').next().addClass('selected');
-	}
-}
 </script>
 </html>
 
