@@ -7,7 +7,7 @@
 */
 
 // Define couple of labels to store the version of this scritp and the base url.
-define('VERSION', '1.1.0');
+define('VERSION', '1.2.0-SNAPSHOT');
 define('COUNTDOWN', 10);
 define('BASE_URL', 'http' . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 's' : '') . "://{$_SERVER['HTTP_HOST']}" . dirname($_SERVER['PHP_SELF']));
 
